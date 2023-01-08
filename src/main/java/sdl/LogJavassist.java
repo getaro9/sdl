@@ -2,13 +2,11 @@ package sdl;
 
 import java.security.ProtectionDomain;
 
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.expr.ExprEditor;
-import javassist.expr.MethodCall;
+import sdl.intercepter.javassist.MethodReplaceEditor;
 
-public class LogJavassist extends ExprEditor {
+public class LogJavassist {
 
   /**
    * クラスの内容を変更する。
@@ -22,27 +20,13 @@ public class LogJavassist extends ExprEditor {
     CtClass cc = classPool.get(className);
 
     // 変更用ルーチンを呼び出す
-    LogJavassist logJavassist = new LogJavassist(); //自作の変更用クラス
-    cc.instrument(logJavassist);
+    MethodReplaceEditor editor = new MethodReplaceEditor(); //自作の変更用クラス
+    cc.instrument(editor);
 
     // クラスローダーに登録する
     Class<?> thisClass = LogJavassist.class.getClass();
     ClassLoader loader = thisClass.getClassLoader();
     ProtectionDomain domain = thisClass.getProtectionDomain();
     cc.toClass(loader, domain);
-  }
-
-  /**
-   * メソッド呼び出しのときに呼ばれる
-   */
-  @Override
-  public void edit(MethodCall m) throws CannotCompileException {
-
-    // 呼び出すメソッド名がhelloWorldだったら呼び出し内容を変更する
-    String name = m.getMethodName();
-    if (name.equals("helloWorld")) {
-      //      m.replace("$0.helloJavassist($$)");
-      m.replace("$_ = \"hello javassist?\";");
-    }
   }
 }

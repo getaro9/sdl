@@ -9,10 +9,14 @@ public class LogTarget {
       System.out.println(helloWorld());
       i++;
     }
-    
+
   }
 
   private String helloWorld() {
     return "Hello World";
+  }
+
+  private String helloJavassist() {
+    return "Hello Javassist";
   }
 }
