@@ -4,7 +4,9 @@ import java.security.ProtectionDomain;
 
 import javassist.ClassPool;
 import javassist.CtClass;
-import sdl.intercepter.javassist.MethodReplaceEditor;
+import javassist.CtMethod;
+import javassist.expr.ExprEditor;
+import sdl.intercepter.javassist.InsertLogReplaceEditor;
 
 public class LogJavassist {
 
@@ -20,13 +22,19 @@ public class LogJavassist {
     CtClass cc = classPool.get(className);
 
     // 変更用ルーチンを呼び出す
-    MethodReplaceEditor editor = new MethodReplaceEditor(); //自作の変更用クラス
+    ExprEditor editor = new InsertLogReplaceEditor(); //自作の変更用クラス
     cc.instrument(editor);
+    
+    // メソッド前後に処理を挟む
+    CtMethod method = cc.getDeclaredMethod("helloWorld");
+    method.insertBefore("{ System.out.println(\"-- method before --\"); }");
+    method.insertAfter("{ System.out.println(\"-- method after --\"); }");
 
     // クラスローダーに登録する
     Class<?> thisClass = LogJavassist.class.getClass();
     ClassLoader loader = thisClass.getClassLoader();
     ProtectionDomain domain = thisClass.getProtectionDomain();
     cc.toClass(loader, domain);
+    cc.writeFile(); // 変換後クラスファイルを書き出す
   }
 }
