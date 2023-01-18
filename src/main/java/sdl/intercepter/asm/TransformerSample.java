@@ -27,13 +27,14 @@ public class TransformerSample extends ClassVisitor {
     return cw.toByteArray();
   }
 
-
   @Override
   public MethodVisitor visitMethod(int access, String name, String desc,
       String signature, String[] exceptions) {
 
+    // 上位クラスのMethodVisitorを作成しておく
     MethodVisitor v = super.visitMethod(access, name, desc, signature, exceptions);
 
+    // 条件に合ったときは、新規に独自MethodVisitorを作成
     if (name.equals("main") && desc.equals("([Ljava/lang/String;)V")) {
       v = new MainTransformer(v, access, name, desc, signature, exceptions);
     }
@@ -41,6 +42,7 @@ public class TransformerSample extends ClassVisitor {
     return v;
   }
 
+  // クラスへのアクセスを終えるときに、メソッドを追加
   @Override
   public void visitEnd() {
     appendShowTwo();
@@ -48,8 +50,7 @@ public class TransformerSample extends ClassVisitor {
   }
 
   private void appendShowTwo() {
-    final MethodVisitor defVisitor = super.visitMethod(
-        Opcodes.ACC_PUBLIC, "showTwo", "()V", null, null);
+    final MethodVisitor defVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, "showTwo", "()V", null, null);
 
     defVisitor.visitCode();
     defVisitor.visitFieldInsn(Opcodes.GETSTATIC,
@@ -71,8 +72,8 @@ public class TransformerSample extends ClassVisitor {
 
     @Override
     public void visitInsn(int opcode) {
+      // mainメソッドのreturnの前に c.showTwo(); を書き込む
       if (opcode == Opcodes.RETURN) {
-        // before return insert c.showTwo();
         super.visitVarInsn(Opcodes.ALOAD, 1); // variable c
         super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
             "AsmSampleClass", "showTwo", "()V", false);

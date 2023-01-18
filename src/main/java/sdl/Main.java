@@ -10,15 +10,23 @@ public class Main {
 
   public static void main(String[] args) throws Exception {
 
+    // Javassitでメソッドを変更して登録
     LogJavassist.convert("sdl.LogTarget");
     LogTarget logTarget = new LogTarget();
     logTarget.helloWorldLoop();
-    
+
+    // ASMでメソッドを新規追加
     byte[] bytes = TransformerSample
         .transform(Files
-            .readAllBytes(Path.of("C:/Users/TAKAHIRO/git/sdl/target/classes/sdl/intercepter/asm/AsmSampleClass.class")));
-    Path path = Paths.get("C:/Users/TAKAHIRO/git/sdl/AsmSampleClass.class");
+            .readAllBytes(
+                Path.of("C:/Users/TAKAHIRO/git/sdl/target/classes/sdl/intercepter/asm/AsmSampleClass.class")));
+
+    // byte[]配列をFileに保存
+    Path path = Paths.get("sdl/intercepter/asm/AsmSampleClass.class");
     Files.write(path, bytes);
+
+    // byte[]配列をインスタンス化して登録
+    LogJavassist.generateNewClass(bytes);
   }
 
 }
