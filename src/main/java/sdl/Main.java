@@ -28,6 +28,11 @@ public class Main {
     Path path = Paths.get("sdl/intercepter/asm/AsmSampleClass.class");
     Files.write(path, bytes);
 
+    // Javassitでメソッド内のループ開始終了を記録するように変更して登録
+    LogLoopJavassist.convert("sdl.LogLoopTarget");
+    LogLoopTarget logLoopTarget = new LogLoopTarget();
+    logLoopTarget.helloWorldLoop();
+
     // byte[]配列をインスタンス化して登録
     LogJavassist.generateNewClass(bytes);
 
@@ -38,5 +43,7 @@ public class Main {
     List<LoopInfo> loopInfos = checkLoops.getLoopInfos();
     System.out.println("");
   }
+
+
 
 }

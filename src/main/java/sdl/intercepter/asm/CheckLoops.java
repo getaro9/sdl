@@ -28,8 +28,7 @@ public class CheckLoops {
       ClassReader cr = new ClassReader(inputStream);
 
       // 読み取ったクラス内容をもとにクラス作成クラスを作成するみたい
-      final ClassWriter cw = new ClassWriter(cr,
-          ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+      final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
       LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
 
@@ -41,6 +40,44 @@ public class CheckLoops {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public byte[] checkForLoops(InputStream inputStream) {
+
+    try {
+      ClassReader cr = new ClassReader(inputStream);
+
+      // 読み取ったクラス内容をもとにクラス作成クラスを作成するみたい
+      final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+
+      LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
+
+      cr.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+      loopInfos = classVisitor.loopInfos;
+
+      return cw.toByteArray();
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * 対象クラスが持つループブロックをチェックして情報を返す。
+   *
+   * @param bytes
+   * @return
+   */
+  public List<LoopInfo> checkForLoops(byte[] bytes) {
+
+    ClassReader cr = new ClassReader(bytes);
+    final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+    LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
+
+    cr.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+    loopInfos = classVisitor.loopInfos;
+
+    return loopInfos;
   }
 
   public class LoopClassVisitor extends ClassVisitor {
@@ -58,6 +95,7 @@ public class CheckLoops {
       MethodVisitor v1 = super.visitMethod(access, name, descriptor, signature, exceptions);
 
       LoopMethodVisitor v2 = new LoopMethodVisitor(v1, access, name, descriptor, signature, exceptions, loopInfos);
+
       return v2;
     }
 
@@ -105,6 +143,7 @@ public class CheckLoops {
         System.out.println("Op: " + opcode + ", GOTO to previous command - possible looped execution");
 
         LoopInfo loopInfo = new LoopInfo(
+            super.getName(),
             visitedLinLabelPairs.get(visitedLinLabelPairs.size() - 1).getValue(),
             visitedLinLabelPairs.get(visitedLinLabelPairs.size() - 2).getValue());
 
@@ -119,7 +158,7 @@ public class CheckLoops {
     return loopInfos;
   }
 
-  public static record LoopInfo(int startLine, int endLine) {
-
+  public static record LoopInfo(String methodNeme, int startLine, int endLine) {
   }
+
 }
