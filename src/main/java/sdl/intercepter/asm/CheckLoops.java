@@ -148,8 +148,19 @@ public class CheckLoops {
             visitedLinLabelPairs.get(visitedLinLabelPairs.size() - 2).getValue());
 
         loopInfos.add(loopInfo);
+
+        super.visitJumpInsn(opcode, label);
+        addLoopEndInstruction();
+      } else {
+        super.visitJumpInsn(opcode, label);
       }
-      super.visitJumpInsn(opcode, label);
+    }
+
+    private void addLoopEndInstruction() {
+      super.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+      super.visitLdcInsn("Loop End");
+      super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println",
+          "(Ljava/lang/String;)V", false);
     }
 
   }

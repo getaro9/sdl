@@ -46,7 +46,7 @@ public class LogLoopJavassist {
       for (LoopInfo loopInfo : loopInfos) {
         if (ctMethod.getName().equals(loopInfo.methodNeme())) {
           ctMethod.insertAt(loopInfo.startLine() - 1, " System.out.println(\"Loop Start\"); ");
-          ctMethod.insertAt(loopInfo.endLine() + 1, " System.out.println(\"Loop End\"); ");
+          // ctMethod.insertAt(loopInfo.endLine() + 1, " System.out.println(\"Loop End\"); ");
         }
       }
     }
