@@ -24,18 +24,7 @@ public class CheckLoops {
   public byte[] checkForLoops(Path classFile) {
 
     try (InputStream inputStream = Files.newInputStream(classFile)) {
-
-      ClassReader cr = new ClassReader(inputStream);
-
-      // 読み取ったクラス内容をもとにクラス作成クラスを作成するみたい
-      final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-
-      LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
-
-      cr.accept(classVisitor, ClassReader.EXPAND_FRAMES);
-      loopInfos = classVisitor.loopInfos;
-
-      return cw.toByteArray();
+      return checkForLoops(inputStream);
 
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -48,7 +37,7 @@ public class CheckLoops {
       ClassReader cr = new ClassReader(inputStream);
 
       // 読み取ったクラス内容をもとにクラス作成クラスを作成するみたい
-      final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+      final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
 
       LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
 
@@ -71,7 +60,7 @@ public class CheckLoops {
   public List<LoopInfo> checkForLoops(byte[] bytes) {
 
     ClassReader cr = new ClassReader(bytes);
-    final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+    final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
     LoopClassVisitor classVisitor = new LoopClassVisitor(cw);
 
     cr.accept(classVisitor, ClassReader.EXPAND_FRAMES);
