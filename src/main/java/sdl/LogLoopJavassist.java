@@ -3,13 +3,10 @@ package sdl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.ProtectionDomain;
-import java.util.List;
 
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtMethod;
 import sdl.intercepter.asm.CheckLoops;
-import sdl.intercepter.asm.CheckLoops.LoopInfo;
 
 public class LogLoopJavassist {
 
@@ -30,26 +27,13 @@ public class LogLoopJavassist {
     String[] splitedClsName = className.split("\\.");
     var clsName = splitedClsName[splitedClsName.length - 1];
 
-    // ASMを通して、バイト配列とループ処理情報を取得する
+    // ASMを通して、バイト配列を取得する
     CheckLoops checkLoops = new CheckLoops();
     byte[] bytes = checkLoops.checkForLoops(LogLoopJavassist.class.getResourceAsStream(clsName + ".class"));
-    List<LoopInfo> loopInfos = checkLoops.getLoopInfos();
 
     // バイト配列からJavassistでの操作用クラスを取得
     InputStream ins = new ByteArrayInputStream(bytes);
     CtClass cc = classPool.makeClass(ins);
-
-    CtMethod[] ctMethods = cc.getDeclaredMethods();
-
-    // メソッドごとに、ループ処理があれば、ソースコード行を指定してログ出力
-    for (CtMethod ctMethod : ctMethods) {
-      for (LoopInfo loopInfo : loopInfos) {
-        if (ctMethod.getName().equals(loopInfo.methodNeme())) {
-          ctMethod.insertAt(loopInfo.startLine() - 1, " System.out.println(\"Loop Start\"); ");
-          // ctMethod.insertAt(loopInfo.endLine() + 1, " System.out.println(\"Loop End\"); ");
-        }
-      }
-    }
 
     // クラスローダーに登録する
     Class<?> thisClass = LogLoopJavassist.class.getClass();
