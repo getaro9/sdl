@@ -28,7 +28,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class CheckLoops {
 
-  public byte[] checkForLoops(Path classFile) {
+  public static byte[] checkForLoops(Path classFile) {
 
     try (InputStream inputStream = Files.newInputStream(classFile)) {
       return checkForLoops(inputStream);
@@ -38,7 +38,7 @@ public class CheckLoops {
     }
   }
 
-  public byte[] checkForLoops(InputStream inputStream) {
+  public static byte[] checkForLoops(InputStream inputStream) {
 
     try {
       ClassReader cr = new ClassReader(inputStream);
@@ -56,6 +56,21 @@ public class CheckLoops {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static byte[] checkForLoops(byte[] classfileBuffer) {
+
+    ClassReader cr = new ClassReader(classfileBuffer);
+
+    // 読み取ったクラス内容をもとにクラス作成クラスを作成するみたい
+    final ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
+
+    ClassNode cn = new LoopClassNode(cw);
+    ClassVisitor classVisitor = new LoopClassVisitor(cn);
+
+    cr.accept(classVisitor, ClassReader.EXPAND_FRAMES);
+
+    return cw.toByteArray();
   }
 
   public static class LoopClassNode extends ClassNode {
@@ -77,7 +92,7 @@ public class CheckLoops {
     }
   }
 
-  public class LoopClassVisitor extends ClassVisitor {
+  public static class LoopClassVisitor extends ClassVisitor {
 
     public LoopClassVisitor(ClassNode cn) {
       super(Opcodes.ASM9, cn);
@@ -122,7 +137,7 @@ public class CheckLoops {
     }
   }
 
-  public class LoopMethodVisitor extends GeneratorAdapter {
+  public static class LoopMethodVisitor extends GeneratorAdapter {
 
     private List<Label> visitedLabels;
     private List<AbstractMap.SimpleEntry<Label, Integer>> visitedLinLabelPairs;

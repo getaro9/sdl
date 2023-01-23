@@ -7,6 +7,9 @@ public class AgentTest {
   @Test
   void agentTest() {
     System.out.println("TEST");
+
+    LogLoopTarget logLoopTarget = new LogLoopTarget();
+    logLoopTarget.helloWorldLoop();
   }
 
 }
