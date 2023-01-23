@@ -19,6 +19,12 @@ public class AgentMain {
 
     System.out.println("Run SdlAgent");
 
+    // 設定ファイルを読み込んで、除外するパッケージ・クラスのパターンを取得
+    Optional<Pattern> excludePackagesPattern = readConfigFile()
+        .map(properties -> properties.getProperty("exclude_packages"))
+        .map(excludePackagesStr -> excludePackagesStr.replaceAll(", ", "|"))
+        .map(excludePackagesStrRe -> Pattern.compile(excludePackagesStrRe));
+
     instrumentation.addTransformer(new ClassFileTransformer() {
 
       public byte[] transform(
@@ -27,21 +33,6 @@ public class AgentMain {
           Class<?> classBeingRedefined,
           ProtectionDomain protectionDomain,
           byte[] classfileBuffer) throws IllegalClassFormatException {
-
-        // 設定ファイル読み込みする前にこれだけは除外しておかないとデバッグ実行時にClassCircularityErrorが発生
-        if (className.matches("^jdk/internal/loader/URLClassPath.*")
-            || className.matches("^jdk/internal/loader/FileURLMapper.*")
-            || className.matches("^java/security/PrivilegedExceptionAction.*")
-            || className.matches("^sun/net/www/protocol/jar/Handler.*")) {
-          return null;
-        }
-
-        // 設定ファイルを読み込んで、除外するパッケージ・クラスのパターンを取得
-        Optional<Properties> opProperties = readConfigFile();
-        Optional<Pattern> excludePackagesPattern = opProperties
-            .map(properties -> properties.getProperty("exclude_packages"))
-            .map(excludePackagesStr -> excludePackagesStr.replaceAll(", ", "|"))
-            .map(excludePackagesStrRe -> Pattern.compile(excludePackagesStrRe));
 
         // 除外対象のパッケージ・クラスかを判定
         if (excludePackagesPattern.isPresent()) {
