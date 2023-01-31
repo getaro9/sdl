@@ -1,0 +1,67 @@
+@startuml sdl_seq
+
+
+partition 開始処理 {
+    :Static_Initializer_Start;
+    note right
+        staticStartFlagを立てる
+    end note
+    :Constructor_Starat;
+    note right
+        constructorStartFlagを立てる
+    end note
+    :Method;
+    if (staticStartFlag true?) then (yes)
+        :Static_Initializerの
+        シーケンス線を出力する;
+        note right
+            outputFlagを立てる
+        end note
+    else (no)
+        :何もしない;
+    endif
+    if (startFlag true?) then (yes)
+        :Construtorの
+        シーケンス線を出力する;
+
+    else (no)
+        :何もしない;
+    endif
+}
+
+:Method;
+
+partition 終了処理 {
+    :Static_Initializer_Start;
+    note right
+        staticStartFlagを立てる
+    end note
+    :Constructor_Starat;
+    note right
+        startFlagを立てる
+    end note
+    :Method;
+    if (staticStartFlag true?) then (yes)
+        :Static_Initializerの
+        シーケンス線を出力する;
+        note right
+            outputFlagを立てる
+        end note
+    else (no)
+        :何もしない;
+    endif
+    if (startFlag true?) then (yes)
+        :Construtorの
+        シーケンス線を出力する;
+
+    else (no)
+        :何もしない;
+    endif
+}
+
+
+@enduml
+
+処理が階層構造をなす。
+階層数を記録する必要がある。
+階層の状態を記録する必要がある。
